@@ -2,7 +2,11 @@
 
 To run development environment with docker, you just simply run these commands below in your favorite terminal:
 
-Firstly, go to directory where the docker files is stored
+Firstly, create .env file
+
+```cp .env.example .env```
+
+And then, go to directory where the docker files is stored
 
 ```cd misc/docker```
 
