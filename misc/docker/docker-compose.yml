@@ -1,0 +1,100 @@
+version: "3.4"
+services:
+    # mariadb service
+    mariadb:
+        container_name: mariadb
+        image: mariadb:10.3.10
+        restart: unless-stopped
+        environment:
+            - MYSQL_ROOT_PASSWORD=laradock
+            - MYSQL_DATABASE=laradock
+            - MYSQL_USER=laradock
+            - MYSQL_PASSWORD=laradock
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "--silent"]
+            start_period: 30s
+        ports:
+            - 55558:3306
+        networks:
+            default:
+        volumes:
+            - ./volumes/mariadb:/var/lib/mysql
+
+    # db administrator
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        depends_on:
+            - mariadb
+        restart: unless-stopped
+        environment:
+            - PMA_HOST=mariadb
+        ports:
+            - 55559:80
+
+    # main development service
+    laravel:
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        env_file:
+            - ../../.env
+        restart: unless-stopped
+        build:
+            context: ../../
+            dockerfile: ./misc/docker/Dockerfile
+        working_dir: ${PWD}/../..
+        ports:
+            - 8000:8000
+        command:
+            - php artisan serve --host 0.0.0.0
+        volumes:
+            - ../../:${PWD}/../..
+        depends_on:
+          - laravel-key-generate
+          - laravel-migrator
+
+    # development key generator service
+    laravel-key-generate:
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        env_file:
+            - ../../.env
+        build:
+            context: ../../
+            dockerfile: ./misc/docker/Dockerfile
+        working_dir: ${PWD}/../..
+        command:
+            - php artisan key:generate
+        volumes:
+            - ../../:${PWD}/../..
+
+    # development database migrator service
+    laravel-migrator:
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        env_file:
+            - ../../.env
+        restart: unless-stopped
+        build:
+            context: ../../
+            dockerfile: ./misc/docker/Dockerfile
+        working_dir: ${PWD}/../..
+        command:
+            - php artisan migrate
+        volumes:
+            - ../../:${PWD}/../..
+        depends_on:
+          - mariadb
+
+    # development database seeder service
+    laravel-seed:
+        image: ${IMAGE_NAME}:${IMAGE_TAG}
+        env_file:
+            - ../../.env
+        build:
+            context: ../../
+            dockerfile: ./misc/docker/Dockerfile
+        working_dir: ${PWD}/../..
+        command:
+            - php artisan db:seed
+        volumes:
+            - ../../:${PWD}/../..
+        depends_on:
+          - mariadb
+          - laravel-migrator
