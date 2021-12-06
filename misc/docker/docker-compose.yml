@@ -48,8 +48,8 @@ services:
         volumes:
             - ../../:${PWD}/../..
         depends_on:
-          - laravel-key-generate
-          - laravel-migrator
+            - laravel-key-generate
+            - laravel-migrator
 
     # development key generator service
     laravel-key-generate:
@@ -80,7 +80,7 @@ services:
         volumes:
             - ../../:${PWD}/../..
         depends_on:
-          - mariadb
+            - mariadb
 
     # development database seeder service
     laravel-seed:
@@ -96,5 +96,4 @@ services:
         volumes:
             - ../../:${PWD}/../..
         depends_on:
-          - mariadb
-          - laravel-migrator
+            - laravel-migrator

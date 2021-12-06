@@ -1,4 +1,5 @@
-FROM php:7.4-fpm-alpine as base
+
+FROM php:7.4-fpm-alpine as builder
 
 # Install system dependencies
 RUN apk --update add wget \
@@ -42,13 +43,9 @@ RUN rm -rf /tmp/*
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-FROM php:7.4-fpm-alpine as builder
-
 # Installing bash
 RUN apk add bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-
-COPY --from=base /usr/local/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www
 
