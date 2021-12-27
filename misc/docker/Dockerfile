@@ -1,51 +1,25 @@
-
-FROM php:7.4-fpm-alpine as builder
+FROM php:7.4-fpm as base
 
 # Install system dependencies
-RUN apk --update add wget \
-    curl \
+RUN apt-get update && apt-get install -y \
     git \
-    grep \
-    build-base \
-    libmemcached-dev \
-    libmcrypt-dev \
+    curl \
+    libpng-dev \
+    libonig-dev \
     libxml2-dev \
-    imagemagick-dev \
-    oniguruma \
-    oniguruma-dev \
-    pcre-dev \
-    libtool \
-    make \
-    autoconf \
-    g++ \
-    cyrus-sasl-dev \
-    libgsasl-dev \
-    freetype \
-    libjpeg-turbo \
-    libpng \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev
-
-# Install PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql mbstring exif pcntl bcmath gd
-RUN pecl channel-update pecl.php.net \
-    && pecl install memcached \
-    && pecl install imagick \
-    && docker-php-ext-enable memcached \
-    && docker-php-ext-enable imagick \
-    && docker-php-ext-enable gd
+    libmcrypt-dev \
+    libmagickwand-dev \
+    zip \
+    unzip
 
 # Clear cache
-RUN rm /var/cache/apk/*
-RUN rm -rf /tmp/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Installing bash
-RUN apk add bash
-RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 
 WORKDIR /var/www
 
